@@ -8,7 +8,7 @@ interface IProd {
     quantity: number
 }
 
-interface Comment {
+interface IComment {
     _id: string;
     userId: string;
     prodId: string;
@@ -18,10 +18,25 @@ interface Comment {
     replies: Reply[];
 }
 
-interface Reply {
+interface IReply {
     _id: string;
     userId: string;
     email: string;
     content: string;
     createdAt: string;
+}
+
+interface IUser {
+    _id: string;
+    phone: number;
+    email: string;
+    address: string;
+    password: string;
+    role: string;
+    resetToken: string
+}
+
+interface ILoginResponse {
+    token: string;
+    user: IUser | null;
 }
