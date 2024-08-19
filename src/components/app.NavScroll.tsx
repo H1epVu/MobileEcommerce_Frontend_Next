@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Navbar, Nav, Button, Container } from 'react-bootstrap';
+import { Navbar, Nav, Button } from 'react-bootstrap';
 
 const NavScroll: React.FC = () => {
     const [id, setId] = useState<string | null>(null);
@@ -17,13 +17,14 @@ const NavScroll: React.FC = () => {
 
     const logout = () => {
         localStorage.clear();
+        setId(null);
         window.location.href = '/';
-        window.location.reload();
     };
 
     useEffect(() => {
-        setId(localStorage.getItem('id'));
-    }, []);
+        const storedId = localStorage.getItem('id');
+        setId(storedId);
+    }, [id])
 
     return (
         <Navbar bg="dark" variant="dark" expand="md" fixed="top">
