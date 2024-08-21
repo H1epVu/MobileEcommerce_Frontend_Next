@@ -7,7 +7,7 @@ import Table from 'react-bootstrap/Table';
 import { useRouter } from 'next/navigation';
 import { FormatNumber } from '@/utils';
 
-const Cart: React.FC = () => {
+const Cart = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const cartItems = useSelector((state: any) => state.cart.items);

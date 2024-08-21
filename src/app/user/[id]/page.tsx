@@ -18,7 +18,7 @@ const fetcher = (url: string) =>
         },
     }).then((res) => res.json());
 
-const UserDetail: React.FC<{ order: IOrder }> = ({ order }) => {
+const UserDetail = () => {
     const router = useRouter();
     const { id } = useParams();
 

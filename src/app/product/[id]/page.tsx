@@ -15,7 +15,7 @@ const fetcher = (url: string) => fetch(url, {
     }
 }).then(res => res.json());
 
-const Detail: React.FC<{ prod: IProd }> = ({ prod }) => {
+const Detail = () => {
     const router = useRouter();
     const { id } = useParams();
     const [quantity, setQuantity] = useState<number>(1);
