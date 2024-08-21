@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -10,4 +11,85 @@ body {
 
 footer {
   margin-top: auto;
+}
+
+.poster-img {
+  background-image: url('https://media.wired.com/photos/6500ad57fe61eb702d721b58/4:3/w_1913,h_1435,c_limit/Apple-iPhone-15-Pro-Hero-Gear.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100%;
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+
+  form {
+    max-width: 330px;
+    padding: 1rem;
+
+
+    .form-floating {
+      margin-block: 15px;
+    }
+
+    span {
+      font-size: 12px;
+      text-align: center;
+    }
+  }
+}
+
+.register {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+
+  form {
+    max-width: 330px;
+    padding: 1rem;
+
+
+    .form-floating {
+      margin-block: 15px;
+    }
+
+    span {
+      font-size: 12px;
+      text-align: center;
+    }
+  }
+}
+
+.forget-password {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+
+  form {
+    max-width: 600px;
+    padding: 1rem;
+
+
+    .form-floating {
+      margin-block: 15px;
+    }
+
+    span {
+      font-size: 12px;
+      text-align: center;
+    }
+  }
+
 }
