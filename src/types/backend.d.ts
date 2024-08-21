@@ -40,3 +40,28 @@ interface ILoginResponse {
     token: string;
     user: IUser | null;
 }
+
+interface IOrder {
+    _id: string;
+    userId: string;
+    userName: string;
+    userPhone: string;
+    order_items: any[];
+    total: number;
+    address: string;
+    paymentMethod: string;
+    status: string;
+    orderDate: string;
+    __v: number;
+}
+
+interface RootState {
+    shoppingCart: {
+        cartItems: {
+            id: number;
+            name: string;
+            price: number;
+            quantity: number;
+        }[];
+    };
+}
