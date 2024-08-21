@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Navbar, Nav, Button } from 'react-bootstrap';
+import Cookies from 'js-cookie';
 
-const NavScroll: React.FC = () => {
+const UserNavBar: React.FC = () => {
     const [id, setId] = useState<string | null>(null);
+    // const role = localStorage.getItem('role')
 
     const login = () => {
         window.location.href = '/login';
@@ -17,6 +19,11 @@ const NavScroll: React.FC = () => {
 
     const logout = () => {
         localStorage.clear();
+
+        Object.keys(Cookies.get()).forEach(cookieName => {
+            Cookies.remove(cookieName);
+        });
+
         setId(null);
         window.location.href = '/';
     };
@@ -27,14 +34,16 @@ const NavScroll: React.FC = () => {
     }, [id])
 
     return (
-        <Navbar bg="dark" variant="dark" expand="md" fixed="top">
+        <Navbar bg="dark" variant="dark" expand="md">
             <Navbar.Brand href="/" className="ms-3">Mobile Ecommerce</Navbar.Brand>
             <Navbar.Toggle aria-controls="navbarScroll" />
             <Navbar.Collapse id="navbarScroll">
                 <Nav className="me-auto mb-2 mb-md-0">
                     <Nav.Link as={Link} href="/" className="text-center">Trang Chủ</Nav.Link>
                     <Nav.Link as={Link} href="/cart" className="text-center">Giỏ Hàng</Nav.Link>
-                    <Nav.Link as={Link} href="/profile" className="text-center">Tài khoản</Nav.Link>
+                    {id && (
+                        <Nav.Link as={Link} href={`/user/${id}`} className="text-center">Tài khoản</Nav.Link>
+                    )}
                 </Nav>
                 <div className="d-flex justify-content-center align-items-center me-3 mt-2 mt-md-0">
                     {!id ? (
@@ -51,4 +60,4 @@ const NavScroll: React.FC = () => {
     );
 };
 
-export default NavScroll;
+export default UserNavBar;
