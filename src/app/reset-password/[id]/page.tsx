@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import CryptoJS from 'crypto-js';
 import Form from 'react-bootstrap/Form';
 
-const resetPassword = () => {
+const ResetPassword = () => {
     const { id } = useParams();
     const router = useRouter();
     const [updatePassword, setUpdatePassword] = useState<string>('');
@@ -107,4 +107,4 @@ const resetPassword = () => {
     );
 };
 
-export default resetPassword;
+export default ResetPassword;
