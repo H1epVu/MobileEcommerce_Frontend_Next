@@ -11,10 +11,6 @@ import Table from 'react-bootstrap/Table';
 import { toast } from 'react-toastify';
 import { checkEmail, checkPhone, FormatNumber, checkOrderStatus, FormatDate, FormatString } from '@/utils';
 
-interface IProps {
-    order: IOrder;
-}
-
 const fetcher = (url: string) =>
     fetch(url, {
         headers: {
@@ -22,7 +18,7 @@ const fetcher = (url: string) =>
         },
     }).then((res) => res.json());
 
-const UserDetail: React.FC<IProps> = ({ order }) => {
+const UserDetail: React.FC<{ order: IOrder }> = ({ order }) => {
     const router = useRouter();
     const { id } = useParams();
 
