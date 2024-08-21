@@ -6,11 +6,6 @@ import { FormatString, checkEmail } from '@/utils';
 import { toast } from "react-toastify";
 import Link from 'next/link';
 
-export interface IProps {
-    user: IUser;
-    token: ILoginResponse;
-}
-
 const Login = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');

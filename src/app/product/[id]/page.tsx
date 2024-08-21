@@ -9,17 +9,13 @@ import { useDispatch } from 'react-redux';
 import { addItem } from '@/redux/slice';
 import Link from 'next/link';
 
-interface IProps {
-    prod: IProd
-}
-
 const fetcher = (url: string) => fetch(url, {
     headers: {
         Authorization: 'Bearer ' + localStorage.getItem('token') || ''
     }
 }).then(res => res.json());
 
-const Detail: React.FC<IProps> = ({ prod }) => {
+const Detail: React.FC<{ prod: IProd }> = ({ prod }) => {
     const router = useRouter();
     const { id } = useParams();
     const [quantity, setQuantity] = useState<number>(1);
