@@ -19,9 +19,10 @@ const Detail = () => {
     const router = useRouter();
     const { id } = useParams();
     const [quantity, setQuantity] = useState<number>(1);
+    const [newComment, setNewComment] = useState<string>('');
+    const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
     const dispatch = useDispatch();
     const { mutate } = useSWRConfig();
-    const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
 
     // Handle Product
     const { data: product, error: productError } = useSWR<IProd>(
@@ -70,6 +71,45 @@ const Detail = () => {
 
     const userId = typeof window !== 'undefined' ? localStorage.getItem('id') : null;
 
+    const { data: userData } = useSWR(userId ? `${process.env.NEXT_PUBLIC_USER_API}/${userId}` : null, fetcher);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (newComment.trim() === '') {
+            toast.error('Nội dung bình luận không được để trống!');
+            return;
+        }
+
+        if (!userData) {
+            toast.error('Không thể xác định thông tin người dùng!');
+            return;
+        }
+
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_COMMENT_API}add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({
+                    prodId: id,
+                    userId: userId,
+                    email: userData.email,
+                    content: newComment,
+                }),
+            });
+
+            toast.success('Đăng bình luận thành công!');
+            setNewComment('');
+            mutate(`${process.env.NEXT_PUBLIC_COMMENT_API}prod/${id}`);
+
+        } catch (error) {
+            toast.error('Có lỗi xảy ra!');
+            console.error(error);
+        }
+    };
+
     const handleReplyChange = (commentId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const { value } = e.target;
         setReplyInputs((prevInputs) => ({
@@ -95,7 +135,7 @@ const Detail = () => {
                 body: JSON.stringify({
                     cmtId: commentId,
                     userId: userId,
-                    email: 'ADMIN',
+                    email: userData.email,
                     content: replyInputs[commentId],
                 }),
             });
@@ -112,6 +152,7 @@ const Detail = () => {
         }
     };
 
+
     const handleDelete = async (commentId: string) => {
         try {
             await fetch(`${process.env.NEXT_PUBLIC_COMMENT_API}delete/${commentId}`, {
@@ -121,7 +162,7 @@ const Detail = () => {
                 },
             });
             toast.success('Xóa bình luận thành công');
-            router.push('/admin/comment');
+            mutate(`${process.env.NEXT_PUBLIC_COMMENT_API}prod/${id}`);
         } catch (error) {
             console.log(error);
         }
@@ -204,64 +245,99 @@ const Detail = () => {
             <div className='container'>
                 <div className='mt-5 mb-5 p-3'>
                     <h1 className='mb-4'>Bình luận</h1>
-                    {comment ? (
-                        <>
-                            {replies.length > 0 ? (
-                                replies.map((reply: any) => (
-                                    <div key={reply._id} className="border mt-3 mb-3 p-3">
-                                        <div className='mb-1'>
-                                            <strong>{reply.email}</strong>
-                                        </div>
-                                        <div className='mb-1'>
-                                            <p>{reply.content}</p>
-                                        </div>
-                                        <div className='mb-1'>
-                                            <small className="text-muted">Posted on: {FormatDate(reply.createdAt)}</small>
-                                        </div>
-                                        <button
-                                            className="btn btn-danger btn-sm mt-2"
-                                            onClick={() => handleDeleteReply(reply._id, comment._id)}
-                                        >
-                                            Delete
-                                        </button>
+                    {commentsData && commentsData.length > 0 ? (
+                        commentsData.map((comment) => (
+                            <div key={comment._id} className="comment-container mb-4 p-3 border rounded shadow-sm">
+                                <div className="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <strong className="d-block mb-1">{comment.email}</strong>
+                                        <p>{comment.content}</p>
+                                        <small className='text-muted'>{FormatDate(comment.createdAt)}</small>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="alert alert-secondary mt-3" role="alert">
-                                    Chưa có bình luận nào được đăng tải.
+                                    {userId === comment.userId && (
+                                        <button className='btn btn-danger btn-sm' onClick={() => handleDelete(comment._id)}>
+                                            Xóa
+                                        </button>
+                                    )}
                                 </div>
-                            )}
-                            {userId ? (
-                                <div>
-                                    <form onSubmit={(e) => handleReply(e, comment._id)}>
-                                        <div className="mt-3 mb-3">
+
+                                {/* Hiển thị phản hồi của bình luận */}
+                                {comment.replies && comment.replies.length > 0 ? (
+                                    comment.replies.map((reply) => (
+                                        <div key={reply._id} className="d-flex justify-content-between align-items-center mb-2 ms-4">
+                                            <div>
+                                                <div className='d-flex align-items-center'>
+                                                    <div className='ms-2'>
+                                                        <div><strong>{reply.email}</strong></div>
+                                                        <div>{reply.content}</div>
+                                                        <small className='text-muted'>{FormatDate(reply.createdAt)}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {userId === reply.userId && (
+                                                <button className='btn btn-danger btn-sm' onClick={() => handleDeleteReply(reply._id, comment._id)}>
+                                                    Xóa
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="alert alert-secondary mt-3" role="alert">
+                                        Chưa có phản hồi nào được đăng tải.
+                                    </div>
+                                )}
+
+                                {/* Form trả lời bình luận */}
+                                {userId ? (
+                                    <form onSubmit={(e) => handleReply(e, comment._id)} className='mt-3'>
+                                        <div className='mb-3'>
                                             <textarea
-                                                className="form-control"
-                                                id="commentContent"
-                                                rows={3}
+                                                className='form-control'
+                                                rows={2}
+                                                placeholder='Viết phản hồi...'
                                                 value={replyInputs[comment._id] || ''}
                                                 onChange={(e) => handleReplyChange(comment._id, e)}
-                                            ></textarea>
-                                            <button type="submit" className="btn btn-primary btn-sm mt-3">Reply</button>
+                                            />
                                         </div>
+                                        <button className='btn btn-dark' type='submit'>Gửi</button>
                                     </form>
-                                </div>
-                            ) : (
-                                <div className='border rounded p-3'>
-                                    <p>Đăng nhập để phản hồi bình luận này</p>
-                                    <Link className="btn btn-dark" href={`/login`}>Login</Link>
-                                </div>
-                            )}
-                        </>
+                                ) : (
+                                    <div className='border rounded p-3 mt-3'>
+                                        <p>Đăng nhập để phản hồi bình luận này</p>
+                                        <Link className="btn btn-dark" href={`/login`}>Đăng nhập</Link>
+                                    </div>
+                                )}
+                            </div>
+                        ))
                     ) : (
                         <div className="alert alert-secondary mt-3" role="alert">
                             Chưa có bình luận nào được đăng tải.
+                        </div>
+                    )}
+                    {/* Form bình luận mới */}
+                    {userId ? (
+                        <form onSubmit={handleSubmit} className='border rounded p-3'>
+                            <div className='mb-3'>
+                                <textarea
+                                    className='form-control'
+                                    rows={3}
+                                    placeholder='Viết bình luận...'
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                />
+                            </div>
+                            <button className='btn btn-dark' type='submit'>Gửi</button>
+                        </form>
+                    ) : (
+                        <div className='border rounded p-3'>
+                            <p>Đăng nhập để phản hồi bình luận này</p>
+                            <Link className="btn btn-dark" href={`/login`}>Đăng nhập</Link>
                         </div>
                     )}
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default Detail;
