@@ -6,9 +6,13 @@ import { Button, Card, Container, Row, Col, Form, InputGroup } from 'react-boots
 import Link from "next/link";
 import { FormatNumber } from "@/utils";
 
+type HomeProps = {
+  prods: IProd[];
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const Home: React.FC<{ prods: IProd[] }> = ({ prods }) => {
+const Home: React.FC<HomeProps> = ({ prods }) => {
   const [searchItem, setSearchItem] = useState<string>('');
   const [query, setQuery] = useState<string>('');
 
