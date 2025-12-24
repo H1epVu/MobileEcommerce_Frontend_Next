@@ -67,19 +67,21 @@ const Payment = () => {
                         }),
                     });
 
-                    for (const item of cartItems) {
-                        await fetch(`${process.env.NEXT_PUBLIC_PRODUCT_API}updateQuantity`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                Authorization: `Bearer ${token}`,
-                            },
-                            body: JSON.stringify({
-                                id: item._id,
-                                quantity: -item.quantity,
-                            }),
-                        });
-                    }
+                    await Promise.all(
+                        cartItems.map(item =>
+                            fetch(`${process.env.NEXT_PUBLIC_PRODUCT_API}updateQuantity`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify({
+                                    id: item._id,
+                                    quantity: -item.quantity,
+                                }),
+                            })
+                        )
+                    );
 
                     dispatch(clearCart());
                     toast.success('Đặt hàng thành công');
