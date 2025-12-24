@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from "react-toastify";
-import { checkEmail, checkPhone, FormatString } from '@/utils';
+import { useUserRegistration } from '@/hooks/useUserRegistration';
 
 const Register = () => {
     const router = useRouter();
@@ -12,70 +11,25 @@ const Register = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
+    const { registerUser } = useUserRegistration({
+        onSuccess: () => {
+            setTimeout(() => {
+                router.push('/login');
+            }, 1000);
+        }
+    });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!name || !email || !phone || !password) {
-            toast.error("Không được để trống");
-            return;
-        }
-        if (!checkEmail(email)) {
-            toast.error("Email không đúng định dạng");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_USER_API}find?email=${email}`);
-            const data = await response.json();
-
-            if (response.ok) {
-                if (data.user) {
-                    toast.error('Email đã được đăng ký!');
-                    return;
-                }
-            } else if (response.status === 404) {
-
-                if (!checkPhone(phone)) {
-                    toast.error('Số điện thoại không hợp lệ');
-                    return
-                }
-
-                const newUser = {
-                    name: name,
-                    phone: parseInt(phone, 10),
-                    email: email,
-                    address: " ",
-                    password: password,
-                    role: "user"
-                };
-
-                const registerResponse = await fetch(`${process.env.NEXT_PUBLIC_USER_API}register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(newUser),
-                });
-
-                if (registerResponse.ok) {
-                    toast.success('Đăng ký thành công');
-                    setTimeout(() => {
-                        router.push('/login');
-                    }, 1000);
-                } else {
-                    const errorData = await registerResponse.json();
-                    toast.error(errorData.message || 'Đã xảy ra lỗi khi đăng ký.');
-                }
-                return;
-            } else {
-                toast.error(data.message || 'Đã xảy ra lỗi khi kiểm tra email.');
-                return;
-            }
-
-        } catch (error) {
-            toast.error('Đã xảy ra lỗi kết nối.');
-            console.error(error);
-        }
+        await registerUser({
+            name,
+            phone,
+            email,
+            address: " ",
+            password,
+            role: "user"
+        });
     };
 
     return (
