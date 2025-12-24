@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
-import CryptoJS from 'crypto-js';
 import Form from 'react-bootstrap/Form';
 
 const ResetPassword = () => {
@@ -51,7 +50,7 @@ const ResetPassword = () => {
                 },
                 body: JSON.stringify({
                     id: id,
-                    password: CryptoJS.MD5(updatePassword).toString(),
+                    password: updatePassword,
                     resetToken: ''
                 })
             });

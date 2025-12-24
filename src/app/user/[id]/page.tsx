@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import CryptoJS from 'crypto-js';
 import { useRouter, useParams } from 'next/navigation';
 import useSWR from 'swr';
 import Modal from 'react-bootstrap/Modal';
@@ -106,9 +105,9 @@ const UserDetail = () => {
                 return;
             }
 
-            const updatedFields: { [key: string]: string } = {};
+            const updatedFields: { [key: string]: string | number } = {};
             if (updateName !== initialName) updatedFields.name = updateName;
-            if (updatePhone !== initialPhone) updatedFields.phone = updatePhone;
+            if (updatePhone !== initialPhone) updatedFields.phone = parseInt(updatePhone, 10);
             if (updateEmail !== initialEmail) updatedFields.email = updateEmail;
             if (updateAddress !== initialAddress) updatedFields.address = updateAddress;
             updatedFields.role = 'user';
@@ -149,33 +148,55 @@ const UserDetail = () => {
             toast.error('Không được để trống');
             return;
         }
-        if (CryptoJS.MD5(currentPassword).toString() !== user?.password) {
-            toast.error('Mật khẩu hiện tại không chính xác');
-            return;
-        }
         if (confirmPassword !== updatePassword) {
             toast.error('Xác nhận mật khẩu không chính xác');
             return;
         }
 
-        await fetch(`${process.env.NEXT_PUBLIC_USER_API}update`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify({
-                id,
-                password: CryptoJS.MD5(updatePassword).toString(),
-            }),
-        });
+        try {
+            const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_USER_API}login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: user?.email,
+                    password: currentPassword,
+                }),
+            });
 
-        await mutateUser();
-        toast.success('Đổi Mật Khẩu Thành Công');
-        setUpdatePassword('');
-        setCurrentPassword('');
-        setConfirmPassword('');
-        handleClosePassword();
+            if (!loginResponse.ok) {
+                toast.error('Mật khẩu hiện tại không chính xác');
+                return;
+            }
+
+            const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_USER_API}update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({
+                    id,
+                    password: updatePassword,
+                }),
+            });
+
+            if (!updateResponse.ok) {
+                toast.error('Cập nhật mật khẩu thất bại');
+                return;
+            }
+
+            await mutateUser();
+            toast.success('Đổi Mật Khẩu Thành Công');
+            setUpdatePassword('');
+            setCurrentPassword('');
+            setConfirmPassword('');
+            handleClosePassword();
+        } catch (error) {
+            toast.error('Đã xảy ra lỗi');
+            console.error('Password update error:', error);
+        }
     };
 
     const fetchDataModal = async (e: React.MouseEvent, orderId: string) => {

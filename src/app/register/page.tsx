@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import CryptoJS from 'crypto-js';
 import { toast } from "react-toastify";
 import { checkEmail, checkPhone, FormatString } from '@/utils';
 
@@ -43,10 +42,10 @@ const Register = () => {
 
                 const newUser = {
                     name: name,
-                    phone: phone,
+                    phone: parseInt(phone, 10),
                     email: email,
                     address: " ",
-                    password: CryptoJS.MD5(password).toString(),
+                    password: password,
                     role: "user"
                 };
 

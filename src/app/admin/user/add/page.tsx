@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from 'react-bootstrap';
 import Link from 'next/link';
-import CryptoJS from 'crypto-js';
 import { toast } from 'react-toastify';
 import { checkEmail, checkPhone, FormatString } from '@/utils';
 
@@ -47,10 +46,10 @@ const AddUser = () => {
 
                 const newUser = {
                     name: name,
-                    phone: phone,
+                    phone: parseInt(phone, 10),
                     email: email,
                     address: address,
-                    password: CryptoJS.MD5(password).toString(),
+                    password: password,
                     role: role
                 };
 

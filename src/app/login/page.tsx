@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, FormEvent } from 'react';
-import CryptoJS from 'crypto-js';
 import { FormatString, checkEmail } from '@/utils';
 import { toast } from "react-toastify";
 import Link from 'next/link';
@@ -32,7 +31,7 @@ const Login = () => {
                 },
                 body: JSON.stringify({
                     email: formattedEmail,
-                    password: CryptoJS.MD5(password).toString()
+                    password: password
                 }),
             });
 
