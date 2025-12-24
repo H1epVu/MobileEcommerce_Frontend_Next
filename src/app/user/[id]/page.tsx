@@ -8,7 +8,8 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import { toast } from 'react-toastify';
-import { checkEmail, checkPhone, FormatNumber, checkOrderStatus, FormatDate, FormatString } from '@/utils';
+import { FormatNumber, checkOrderStatus, FormatDate } from '@/utils';
+import { useUserUpdate } from '@/hooks/useUserUpdate';
 
 const fetcher = (url: string) =>
     fetch(url, {
@@ -72,73 +73,29 @@ const UserDetail = () => {
     const handleShowOrder = () => setShowOrder(true);
     const handleCloseOrder = () => setShowOrder(false);
 
+    const { updateUser } = useUserUpdate({
+        onSuccess: async () => {
+            await mutateUser();
+            handleCloseInfo();
+        }
+    });
+
     const updateUserInfo = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        setUpdateName(FormatString(updateName));
-        setUpdateAddress(FormatString(updateAddress));
-        setUpdateEmail(FormatString(updateEmail));
-        setUpdatePhone(FormatString(updatePhone));
-
-        if (!updateName || !updateEmail || !updatePhone || !updateAddress) {
-            toast.error('Không được để trống');
-            return;
-        }
-        if (!checkPhone(updatePhone)) {
-            toast.error('Hãy nhập số điện thoại hợp lệ');
-            return;
-        }
-        if (!checkEmail(updateEmail)) {
-            toast.error('Hãy nhập email hợp lệ');
-            return;
-        }
-        if (updateAddress.trim().length < 5) {
-            toast.error('Hãy nhập địa chỉ hợp lệ');
-            return;
-        }
-
-        try {
-            const existingUser = await fetcher(`${process.env.NEXT_PUBLIC_USER_API}find?email=${updateEmail}`);
-
-            if (existingUser._id && existingUser._id !== id) {
-                toast.error('Email đã được đăng ký');
-                return;
-            }
-
-            const updatedFields: { [key: string]: string | number } = {};
-            if (updateName !== initialName) updatedFields.name = updateName;
-            if (updatePhone !== initialPhone) updatedFields.phone = parseInt(updatePhone, 10);
-            if (updateEmail !== initialEmail) updatedFields.email = updateEmail;
-            if (updateAddress !== initialAddress) updatedFields.address = updateAddress;
-            updatedFields.role = 'user';
-
-            if (Object.keys(updatedFields).length > 0) {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_USER_API}update`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                    body: JSON.stringify({
-                        id,
-                        ...updatedFields,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Update failed');
-                }
-
-                await mutateUser();
-                toast.success('Cập Nhật Thành Công');
-                handleCloseInfo();
-            } else {
-                toast.info('Không có thay đổi nào để cập nhật');
-            }
-        } catch (error) {
-            console.error('Update Error:', error);
-            toast.error('Cập Nhật Thất Bại');
-        }
+        await updateUser({
+            id,
+            updateName,
+            updatePhone,
+            updateEmail,
+            updateAddress,
+            updateRole: 'user',
+            initialName,
+            initialPhone,
+            initialEmail,
+            initialAddress,
+            initialRole: 'user'
+        });
     };
 
     const updateUserPassword = async (e: React.FormEvent) => {
@@ -228,19 +185,21 @@ const UserDetail = () => {
             }),
         });
 
-        for (const item of orderDetail.order_items) {
-            await fetch(`${process.env.NEXT_PUBLIC_PRODUCT_API}updateQuantity`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-                body: JSON.stringify({
-                    id: item.product_id,
-                    quantity: item.quantity,
-                }),
-            });
-        }
+        await Promise.all(
+            orderDetail.order_items.map(item =>
+                fetch(`${process.env.NEXT_PUBLIC_PRODUCT_API}updateQuantity`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify({
+                        id: item.product_id,
+                        quantity: item.quantity,
+                    }),
+                })
+            )
+        );
 
         await mutateOrders();
         toast.success('Hủy Đơn Hàng Thành Công');

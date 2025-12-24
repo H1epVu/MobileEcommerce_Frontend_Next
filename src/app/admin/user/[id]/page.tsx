@@ -4,9 +4,7 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
-import CryptoJS from 'crypto-js';
-import { toast } from "react-toastify";
-import { checkEmail, checkPhone, FormatNumber, FormatString } from '@/utils';
+import { useUserUpdate } from '@/hooks/useUserUpdate';
 
 const fetcher = (url: string) =>
     fetch(url, {
@@ -54,74 +52,28 @@ const UpdateUser = () => {
         }
     );
 
+    const { updateUser } = useUserUpdate({
+        onSuccess: () => {
+            router.push('/admin/user');
+        }
+    });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        setUpdateName(FormatString(updateName));
-        setUpdateAddress(FormatString(updateAddress));
-        setUpdateEmail(FormatString(updateEmail));
-        setUpdatePhone(FormatString(updatePhone));
-        setUpdateRole(FormatString(updateRole));
-
-        if (!updateName || !updateEmail || !updatePhone || !updateAddress) {
-            toast.error('Không được để trống');
-            return;
-        }
-        if (!checkPhone(updatePhone)) {
-            toast.error('Hãy nhập số điện thoại hợp lệ');
-            return;
-        }
-        if (!checkEmail(updateEmail)) {
-            toast.error('Hãy nhập email hợp lệ');
-            return;
-        }
-        if (updateAddress.trim().length < 5) {
-            toast.error('Hãy nhập địa chỉ hợp lệ');
-            return;
-        }
-
-        try {
-            const existingUser = await fetcher(`${process.env.NEXT_PUBLIC_USER_API}find?email=${updateEmail}`);
-
-            if (existingUser._id && existingUser._id !== id) {
-                toast.error('Email đã được đăng ký');
-                return;
-            }
-
-            const updatedFields: { [key: string]: string | number } = {};
-            if (updateName !== initialName) updatedFields.name = updateName;
-            if (updatePhone !== initialPhone) updatedFields.phone = parseInt(updatePhone, 10);
-            if (updateEmail !== initialEmail) updatedFields.email = updateEmail;
-            if (updateAddress !== initialAddress) updatedFields.address = updateAddress;
-            if (updateRole !== initialRole) updatedFields.role = updateRole;
-
-            if (Object.keys(updatedFields).length > 0) {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_USER_API}update`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                    body: JSON.stringify({
-                        id,
-                        ...updatedFields,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Update failed');
-                }
-
-                toast.success('Cập Nhật Thành Công');
-                router.push('/admin/user');
-
-            } else {
-                toast.info('Không có thay đổi nào để cập nhật');
-            }
-        } catch (error) {
-            console.error('Update Error:', error);
-            toast.error('Cập Nhật Thất Bại');
-        }
+        await updateUser({
+            id,
+            updateName,
+            updatePhone,
+            updateEmail,
+            updateAddress,
+            updateRole,
+            initialName,
+            initialPhone,
+            initialEmail,
+            initialAddress,
+            initialRole
+        });
     };
 
     if (error)
