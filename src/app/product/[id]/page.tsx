@@ -71,7 +71,7 @@ const Detail = () => {
 
     const userId = typeof window !== 'undefined' ? localStorage.getItem('id') : null;
 
-    const { data: userData } = useSWR(userId ? `${process.env.NEXT_PUBLIC_USER_API}/${userId}` : null, fetcher);
+    const { data: userData } = useSWR(userId ? `${process.env.NEXT_PUBLIC_USER_API}${userId}` : null, fetcher);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

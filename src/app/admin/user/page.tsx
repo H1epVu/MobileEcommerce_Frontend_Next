@@ -27,7 +27,7 @@ const User = () => {
 
         try {
             const userData = await fetch(
-                `${process.env.NEXT_PUBLIC_USER_API}/${searchId}`,
+                `${process.env.NEXT_PUBLIC_USER_API}${searchId}`,
                 {
                     headers: {
                         Authorization: 'Bearer ' + localStorage.getItem('token'),
@@ -47,7 +47,7 @@ const User = () => {
 
     const deleteUser = async (id: string) => {
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_USER_API}/delete/${id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_USER_API}delete/${id}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: 'Bearer ' + localStorage.getItem('token'),

@@ -33,7 +33,7 @@ const UpdateUser = () => {
     const [updateRole, setUpdateRole] = useState<string>(initialRole);
 
     const { data: currentUser, error } = useSWR(
-        id ? `${process.env.NEXT_PUBLIC_USER_API}/${id}` : null,
+        id ? `${process.env.NEXT_PUBLIC_USER_API}${id}` : null,
         fetcher,
         {
             onSuccess: (data) => {
@@ -88,9 +88,9 @@ const UpdateUser = () => {
                 return;
             }
 
-            const updatedFields: { [key: string]: string } = {};
+            const updatedFields: { [key: string]: string | number } = {};
             if (updateName !== initialName) updatedFields.name = updateName;
-            if (updatePhone !== initialPhone) updatedFields.phone = updatePhone;
+            if (updatePhone !== initialPhone) updatedFields.phone = parseInt(updatePhone, 10);
             if (updateEmail !== initialEmail) updatedFields.email = updateEmail;
             if (updateAddress !== initialAddress) updatedFields.address = updateAddress;
             if (updateRole !== initialRole) updatedFields.role = updateRole;
